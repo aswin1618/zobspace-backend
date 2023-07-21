@@ -12,7 +12,7 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ['id', 'author', 'audio_file', 'caption', 'created_at', 'likes', 'display_name', 'updated_at',
-                  'total_likes',
+                  'total_likes','is_hidden',
                   'original_post_author', 'authors_along_collab', 'author_profile_pic']
 
     def get_total_likes(self, post):

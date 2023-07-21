@@ -23,6 +23,7 @@ class Post(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     likes = models.ManyToManyField(User, related_name='liked_posts', blank=True)
     collaboration = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
+    is_hidden = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['-created_at']

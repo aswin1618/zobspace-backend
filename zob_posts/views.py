@@ -55,34 +55,6 @@ class LikePostAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class CreateCommentAPIView(APIView):
-    def post(self, request, post_id):
-        user = request.user
-
-        try:
-            post = Post.objects.get(id=post_id)
-        except Post.DoesNotExist:
-            return Response({'detail': 'Post not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-        serializer = CommentSerializer(data=request.data)
-        if serializer.is_valid():
-            content = serializer.validated_data['content']
-            comment = Comment.objects.create(post=post, author=user, content=content)
-            return Response({'detail': 'Comment created successfully.'}, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class DeleteCommentAPIView(APIView):
-    def delete(self, request, comment_id):
-        try:
-            comment = Comment.objects.get(id=comment_id)
-            comment.delete()
-            return Response({'detail': 'Comment deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
-        except Comment.DoesNotExist:
-            return Response({'detail': 'Comment not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-
 @api_view(['GET'])
 def list_all_posts(request):
     posts = Post.objects.exclude(author=request.user)
@@ -221,3 +193,30 @@ def posts_list_admin(request):
     posts = Post.objects.all()
     serializer = PostSerializer(posts, many=True)
     return Response(serializer.data, status=HTTP_200_OK)
+
+
+@api_view(['GET'])
+def get_comments_for_post(request, postid):
+    post = get_object_or_404(Post, id=postid)
+    comments = Comment.objects.filter(post=post)
+
+    serializer = CommentSerializer(comments, many=True)
+    data = serializer.data
+    return Response(serializer.data, status=HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])  # Require authentication for this view
+def create_comment(request):
+    data = request.data
+    # postId= request.data.get('post_id')
+    # data['post'] = Post.objects.get(id=postId)
+    data['author'] = request.user.id  # Set the author using request.user.id
+
+    serializer = CommentSerializer(data=data)
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=201)
+
+    return Response(serializer.errors, status=400)

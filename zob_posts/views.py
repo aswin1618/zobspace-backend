@@ -160,7 +160,8 @@ def post_collab(request, format=None):
 def notifications(request):
     notification = Notification.objects.filter(user=request.user)
     serializer = NotificationSerializer(notification, many=True)
-    return Response(serializer.data)
+    inverted_notifications = serializer.data[::-1]
+    return Response(inverted_notifications)
 
 
 @api_view(['GET'])
